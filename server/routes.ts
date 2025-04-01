@@ -1,9 +1,12 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { DBStorage } from "./dbStorage";
 import { habitFormSchema, insertHabitCompletionSchema } from "@shared/schema";
 import { z } from "zod";
 import { format } from "date-fns";
+
+// Create a database storage instance
+const storage = new DBStorage();
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Habit routes
@@ -146,7 +149,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const completion = await storage.toggleHabitCompletion(
         validatedData.habitId,
         validatedData.completionDate,
-        validatedData.completed
+        validatedData.completed === undefined ? true : validatedData.completed
       );
       
       return res.status(201).json(completion);

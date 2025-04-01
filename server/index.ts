@@ -36,7 +36,11 @@ app.use((req, res, next) => {
   next();
 });
 
+// Ensure database connection is working
+import './db';
+
 (async () => {
+  // Initialize routes
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
