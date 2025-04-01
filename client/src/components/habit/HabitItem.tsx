@@ -3,7 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { Zap, Clock, Edit, Trash2 } from "lucide-react";
+import { Zap, Clock, Edit, Trash2, Archive } from "lucide-react";
 import { HabitWithStats } from "@shared/schema";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -19,6 +19,7 @@ export default function HabitItem({ habit }: HabitItemProps) {
   const { toast } = useToast();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
   
   // Format reminder time
   const reminderTime = habit.reminderTime 
@@ -82,6 +83,30 @@ export default function HabitItem({ habit }: HabitItemProps) {
     }
   });
 
+  // Archive habit mutation
+  const archiveHabitMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('PATCH', `/api/habits/${habit.id}/archive`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/habits'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
+      
+      toast({
+        title: "Habit archived",
+        description: "The habit has been archived and won't appear in your dashboard.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to archive habit. Please try again.",
+      });
+      console.error("Error archiving habit:", error);
+    }
+  });
+
   // Toggle habit completion status
   const handleToggleHabit = (checked: boolean) => {
     toggleHabitMutation.mutate({ completed: checked });
@@ -91,6 +116,12 @@ export default function HabitItem({ habit }: HabitItemProps) {
   const handleDeleteHabit = () => {
     setIsDeleteDialogOpen(false);
     deleteHabitMutation.mutate();
+  };
+
+  // Archive habit
+  const handleArchiveHabit = () => {
+    setIsArchiveDialogOpen(false);
+    archiveHabitMutation.mutate();
   };
 
   return (
@@ -149,6 +180,14 @@ export default function HabitItem({ habit }: HabitItemProps) {
             </button>
             <button 
               type="button" 
+              className="text-gray-400 hover:text-gray-500 mr-2"
+              onClick={() => setIsArchiveDialogOpen(true)}
+              aria-label="Archive habit"
+            >
+              <Archive className="h-5 w-5" />
+            </button>
+            <button 
+              type="button" 
               className="text-gray-400 hover:text-gray-500"
               onClick={() => setIsDeleteDialogOpen(true)}
               aria-label="Delete habit"
@@ -171,6 +210,26 @@ export default function HabitItem({ habit }: HabitItemProps) {
           <HabitForm habitId={habit.id} onSuccess={() => setIsEditDialogOpen(false)} />
         </DialogContent>
       </Dialog>
+
+      {/* Archive Confirmation Dialog */}
+      <AlertDialog open={isArchiveDialogOpen} onOpenChange={setIsArchiveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Archive this habit?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will move the habit to your archive. You can still access it in Settings.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleArchiveHabit}
+            >
+              Archive
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

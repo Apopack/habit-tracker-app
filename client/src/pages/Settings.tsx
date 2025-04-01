@@ -230,10 +230,13 @@ export default function Settings() {
                                         size="sm"
                                         variant="ghost"
                                         onClick={() => {
-                                          // Unarchive logic would go here
-                                          toast({
-                                            title: "Feature not implemented",
-                                            description: "Unarchiving habits is not yet implemented.",
+                                          archiveHabitMutation.mutate(habit.id, {
+                                            onSuccess: () => {
+                                              toast({
+                                                title: "Habit unarchived",
+                                                description: "The habit has been restored to your active habits.",
+                                              });
+                                            }
                                           });
                                         }}
                                       >

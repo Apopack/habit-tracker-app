@@ -121,9 +121,10 @@ export class MemStorage implements IStorage {
     const habit = this.habitsMap.get(id);
     if (!habit) return undefined;
     
+    // Toggle the archived status
     const updatedHabit: Habit = {
       ...habit,
-      isArchived: true
+      isArchived: !habit.isArchived
     };
     
     this.habitsMap.set(id, updatedHabit);

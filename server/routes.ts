@@ -103,13 +103,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = Number(req.params.id);
       if (isNaN(id)) return res.status(400).json({ message: "Invalid habit ID" });
       
-      const archivedHabit = await storage.archiveHabit(id);
-      if (!archivedHabit) return res.status(404).json({ message: "Habit not found" });
+      const habit = await storage.getHabit(id);
+      if (!habit) return res.status(404).json({ message: "Habit not found" });
       
-      return res.json(archivedHabit);
+      const updatedHabit = await storage.archiveHabit(id);
+      
+      const action = updatedHabit?.isArchived ? "archived" : "unarchived";
+      return res.json(updatedHabit);
     } catch (error) {
-      console.error("Error archiving habit:", error);
-      return res.status(500).json({ message: "Failed to archive habit" });
+      console.error("Error updating habit archive status:", error);
+      return res.status(500).json({ message: "Failed to update habit archive status" });
     }
   });
 
