@@ -28,7 +28,7 @@ A full-stack habit tracking application with visualization features to help user
 
 1. Clone the repository
    ```
-   git clone https://github.com/yourusername/habit-tracker-app.git
+   git clone https://github.com/Apopack/habit-tracker-app.git
    cd habit-tracker-app
    ```
 
